@@ -1,5 +1,11 @@
 plugins {
     kotlin("jvm").version("1.4.21")
+    application
+}
+
+application {
+    mainClass.set("link.kotlin.repo.ApplicationKt")
+    applicationName = "repo"
 }
 
 repositories {

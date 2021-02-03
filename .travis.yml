@@ -1,0 +1,19 @@
+language: java
+os: linux
+dist: bionic
+
+jdk:
+  - openjdk11
+
+before_script:
+  - echo "org.gradle.jvmargs=-Xmx128m" >> gradle.properties
+
+script:
+  - ./gradlew check installDist
+  - docker build -t "heapy/repo.kotlin.link:b${TRAVIS_BUILD_NUMBER}" ./
+
+deploy:
+  provider: script
+  script: bash .ci/deploy.sh
+  on:
+    branch: master
