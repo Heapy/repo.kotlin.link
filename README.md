@@ -23,5 +23,14 @@ Create PR with changes to [index.yml](https://github.com/Heapy/repo.kotlin.link/
 
 ```bash
 # Run
-docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 heapy/repo.kotlin.link:b5
+docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 heapy/repo.kotlin.link:b7
+```
+
+## Update instance
+
+```bash
+docker pull heapy/repo.kotlin.link:b7
+docker stop repo.kotlin.link
+docker rm repo.kotlin.link
+docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 heapy/repo.kotlin.link:b7
 ```
