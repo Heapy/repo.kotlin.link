@@ -5,3 +5,13 @@ Maven repository that proxy artifact request to one of know project-based maven 
 # Run
 docker run --restart=always -p 0.0.0.0:8092:8080 heapy/repo.kotlin.link:b1
 ```
+
+## Gradle
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://repo.kotlin.link")
+    }
+}
+```
