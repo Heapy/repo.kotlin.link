@@ -52,7 +52,7 @@ class RepoRedirectHandler(
 
         val location = url + exchange.requestPath
 
-        LOGGER.error("Request [{}] to redirected to [{}]", exchange.requestPath, location)
+        LOGGER.debug("Request [{}] to redirected to [{}]", exchange.requestPath, location)
 
         exchange.responseHeaders.add(Headers.LOCATION, location)
         exchange.statusCode = StatusCodes.FOUND
