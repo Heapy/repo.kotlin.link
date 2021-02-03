@@ -1,1 +1,0 @@
-io.heapy.komodo https://dl.bintray.com/heapy/heap-dev/
