@@ -5,6 +5,8 @@ Maven repository that proxy artifact request to one of know project-based maven 
 
 - [JetBrains Space](https://www.jetbrains.com/help/space/create-a-maven-repository.html) 10 GB of total storage, 50 GB of total data transfer per month
 - [AWS S3](https://ruslan.ibragimov.by/2021/02/04/publish-maven-artifact-to-s3/)
+- [JitPack](https://jitpack.io)
+- [GitHub Packages](https://docs.github.com/en/packages)
 - Please submit more options
 
 ## Gradle
