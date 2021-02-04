@@ -1,6 +1,12 @@
 # repo.kotlin.link [![Build Status](https://travis-ci.com/Heapy/repo.kotlin.link.svg?branch=main)](https://travis-ci.com/Heapy/repo.kotlin.link) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/heapy/repo.kotlin.link?sort=semver)
 Maven repository that proxy artifact request to one of know project-based maven repositories
 
+## Where to host your maven repository
+
+- [JetBrains Space](https://www.jetbrains.com/help/space/create-a-maven-repository.html) 10 GB of total storage, 50 GB of total data transfer per month
+- [AWS S3](https://ruslan.ibragimov.by/2021/02/04/publish-maven-artifact-to-s3/)
+- Please submit more options
+
 ## Gradle
 
 ```kotlin
