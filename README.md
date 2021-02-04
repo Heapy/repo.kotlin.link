@@ -1,4 +1,4 @@
-# repo.kotlin.link [![Build Status](https://travis-ci.com/Heapy/repo.kotlin.link.svg?branch=main)](https://travis-ci.com/Heapy/repo.kotlin.link)
+# repo.kotlin.link [![Build Status](https://travis-ci.com/Heapy/repo.kotlin.link.svg?branch=main)](https://travis-ci.com/Heapy/repo.kotlin.link) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/heapy/repo.kotlin.link?sort=semver)
 Maven repository that proxy artifact request to one of know project-based maven repositories
 
 ## Gradle
