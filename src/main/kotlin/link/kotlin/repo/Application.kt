@@ -18,7 +18,7 @@ fun main() {
     val config = RepoRedirectHandler::class.java.classLoader
         .getResourceAsStream("index.yml")!!
         .use { mapper.readValue(it, object : TypeReference<Map<String, List<String>>>() {}) }
-        .flatMap { it.value.map { group -> group to it.key } }
+        .flatMap { it.value.map { group -> group to it.key.dropLastWhile { it == '/' } } }
         .toMap()
 
     Undertow.builder()
