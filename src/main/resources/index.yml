@@ -5,3 +5,5 @@
   - "kscience.kmath"
 "https://maven.pkg.jetbrains.space/mipt-npm/p/df/maven":
   - "hep.dataforge"
+"https://jcenter.bintray.com":
+  - "dev.inmo"
