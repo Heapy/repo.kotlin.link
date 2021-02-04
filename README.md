@@ -15,7 +15,7 @@ repositories {
 
 Create PR with changes to [index.yml](https://github.com/Heapy/repo.kotlin.link/blob/main/src/main/resources/index.yml):
 ```yaml
-"https://dl.bintray.com/heapy/heap-dev": # repository url without / at the end
+"https://dl.bintray.com/heapy/heap-dev": # repository url
   - "io.heapy.komodo" # list of allowed groups
 ```
 
