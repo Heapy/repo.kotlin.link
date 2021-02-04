@@ -36,6 +36,12 @@ class RepoRedirectHandler(
     private val config: Map<String, String>
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
+        if (exchange.requestPath == "/") {
+            exchange.responseHeaders.add(Headers.LOCATION, "https://github.com/Heapy/repo.kotlin.link")
+            exchange.statusCode = StatusCodes.FOUND
+            return
+        }
+
         val parts = exchange.requestPath.split('/')
             .filter(String::isNotEmpty)
 
