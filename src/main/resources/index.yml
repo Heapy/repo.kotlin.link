@@ -1,2 +1,7 @@
 "https://heapy.s3.eu-central-1.amazonaws.com":
   - "io.heapy.komodo"
+"https://maven.pkg.jetbrains.space/mipt-npm/p/sci/maven":
+  - "kscience.plotlykt"
+  - "kscience.kmath"
+"https://maven.pkg.jetbrains.space/mipt-npm/p/df/maven":
+  - "hep.dataforge"
