@@ -19,6 +19,13 @@ repositories {
 }
 ```
 
+## Deploy to Maven Central
+
+repo.kotlin.link is great for quick experiments, and collaboration of couple independent projects under single repository url. I suggest you to use it in home projects, or in environment where you can cache dependencies in case if original dependency not longer available. But for enterprise level softwate you may like to use only maven central. Here some projects that may help to upload your artifacts to maven central:
+
+- [gradle-nexus/publish-plugin](https://github.com/gradle-nexus/publish-plugin) - Gradle Plugin covering the whole releasing process to Maven Central
+- [vanniktech/gradle-maven-publish-plugin](https://github.com/vanniktech/gradle-maven-publish-plugin) - Gradle Plugin that tries to simplify setup process
+
 ## How to add your repository
 
 Create PR with changes to [index.yml](https://github.com/Heapy/repo.kotlin.link/blob/main/src/main/resources/index.yml):
