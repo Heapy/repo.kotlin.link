@@ -1,76 +1,91 @@
 package link.kotlin.repo
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.undertow.Undertow
 import io.undertow.server.HttpHandler
-import io.undertow.server.HttpServerExchange
-import io.undertow.server.handlers.ResponseCodeHandler
-import io.undertow.util.Headers
-import io.undertow.util.StatusCodes
-import org.slf4j.LoggerFactory
+import io.undertow.server.handlers.BlockingHandler
+import org.apache.http.client.HttpClient
+import org.apache.http.impl.client.HttpClients
 import kotlin.concurrent.thread
 
 fun main() {
-    val mapper = ObjectMapper(YAMLFactory())
+    ApplicationFactory().start()
+    // To test with local config
+    // LocalApplicationFactory().start()
+}
 
-    val config = RepoRedirectHandler::class.java.classLoader
-        .getResourceAsStream("index.yml")!!
-        .use { mapper.readValue(it, object : TypeReference<Map<String, List<String>>>() {}) }
-        .flatMap { it.value.map { group -> group to it.key.dropLastWhile { it == '/' } } }
-        .toMap()
+open class ApplicationFactory {
+    open val yamlMapper: ObjectMapper by lazy {
+        ObjectMapper(YAMLFactory())
+    }
 
-    Undertow.builder()
-        .addHttpListener(8080, "0.0.0.0", RepoRedirectHandler(config))
-        .build()
-        .also { server ->
-            server.start()
+    open val httpClient: HttpClient by lazy {
+        HttpClients.createDefault().also {
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                server.stop()
+                it.close()
             })
         }
-}
-
-class RepoRedirectHandler(
-    private val config: Map<String, String>
-) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) {
-        if (exchange.requestPath == "/") {
-            exchange.responseHeaders.add(Headers.LOCATION, "https://github.com/Heapy/repo.kotlin.link")
-            exchange.statusCode = StatusCodes.FOUND
-            return
-        }
-
-        val parts = exchange.requestPath.split('/')
-            .filter(String::isNotEmpty)
-
-        val builder = StringBuilder()
-        var first = true
-
-        val url = parts.firstNotNullOrNull { part ->
-            if (first) first = false else builder.append(".")
-            builder.append(part)
-            config[builder.toString()]
-        }
-
-        url ?: return ResponseCodeHandler.HANDLE_404.handleRequest(exchange)
-
-        val location = url + exchange.requestPath
-
-        LOGGER.debug("Request [{}] to redirected to [{}]", exchange.requestPath, location)
-
-        exchange.responseHeaders.add(Headers.LOCATION, location)
-        exchange.statusCode = StatusCodes.FOUND
     }
 
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(RepoRedirectHandler::class.java)
+    open val configurationService: ConfigurationService by lazy {
+        GithubConfigurationService(
+            httpClient = httpClient,
+            yamlMapper = yamlMapper
+        )
     }
 
+    open val delegatingHandler: DelegatingHandler by lazy {
+        DelegatingHandler()
+    }
+
+    open val updateReposHandler: HttpHandler by lazy {
+        BlockingHandler(
+            UpdateReposHandler(
+                updateNotificationService = updateNotificationService
+            )
+        )
+    }
+
+    open val homePageHandler: HttpHandler by lazy {
+        HomePageHandler(configurationService)
+    }
+
+    open val rootHandlerProvider: RootHandlerProvider by lazy {
+        RootHandlerProvider(
+            configurationService = configurationService,
+            homePageHandler = homePageHandler,
+            updateReposHandler = updateReposHandler
+        )
+    }
+
+    open val updateNotificationService: UpdateNotificationService by lazy {
+        UpdateNotificationService()
+    }
+
+    open val undertow: Undertow by lazy {
+        Undertow.builder()
+            .addHttpListener(8080, "0.0.0.0", delegatingHandler)
+            .build()
+            .also { server ->
+                Runtime.getRuntime().addShutdownHook(thread(start = false) {
+                    server.stop()
+                })
+            }
+    }
+
+    open fun start() {
+        updateNotificationService.subscribe {
+            configurationService.update()
+            delegatingHandler.setHandler(rootHandlerProvider.get())
+        }
+        updateNotificationService.publish()
+        undertow.start()
+    }
 }
 
-inline fun <T, R> Iterable<T>.firstNotNullOrNull(transform: (T) -> R?): R? {
-    for (element in this) transform(element)?.let { return it }
-    return null
+open class LocalApplicationFactory : ApplicationFactory() {
+    override val configurationService: ConfigurationService by lazy {
+        LocalConfigurationService(yamlMapper)
+    }
 }

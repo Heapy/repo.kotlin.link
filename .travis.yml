@@ -13,7 +13,11 @@ script:
   - docker build -t "heapy/repo.kotlin.link:b${TRAVIS_BUILD_NUMBER}" ./
 
 deploy:
-  provider: script
-  script: bash .ci/deploy.sh
-  on:
-    branch: main
+  - provider: script
+    script: bash .ci/deploy.sh
+    on:
+      branch: main
+  - provider: script
+    script: bash .ci/update.sh
+    on:
+      branch: main
