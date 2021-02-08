@@ -25,6 +25,7 @@ repo.kotlin.link is great for quick experiments, and collaboration of couple ind
 
 - [gradle-nexus/publish-plugin](https://github.com/gradle-nexus/publish-plugin) - Gradle Plugin covering the whole releasing process to Maven Central
 - [vanniktech/gradle-maven-publish-plugin](https://github.com/vanniktech/gradle-maven-publish-plugin) - Gradle Plugin that tries to simplify setup process
+- [saket/startship](https://github.com/saket/startship) - CLI tool for publishing
 
 ## How to add your repository
 
