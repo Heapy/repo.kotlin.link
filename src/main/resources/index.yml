@@ -7,3 +7,7 @@
   - "hep.dataforge"
 "https://jcenter.bintray.com":
   - "dev.inmo"
+"https://maven.pkg.github.com/mpetuska/khakra":
+  - "io.github.mpetuska"
+"https://maven.pkg.github.com/mpetuska/npm-publish":
+  - "lt.petuska"
