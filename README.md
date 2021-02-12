@@ -6,7 +6,7 @@ Maven repository that proxy artifact request to one of know project-based maven 
 - [JetBrains Space](https://www.jetbrains.com/help/space/create-a-maven-repository.html) 10 GB of total storage, 50 GB of total data transfer per month
 - [AWS S3](https://ruslan.ibragimov.by/2021/02/04/publish-maven-artifact-to-s3/) $0.0245 per GB storage, $0.09 per GB transfer. - Space equivalent of storage and transfer will cost about 5$ per month.
 - [JitPack](https://jitpack.io): Always free for OSS, [more pricing options on their site](https://jitpack.io/private#subscribe).
-- [GitHub Packages](https://docs.github.com/en/packages): free for public repositories. Private repositories: 500MB of storage, 1GB of data transfer per month for free, [more pricing options on their site](https://github.com/features/packages#pricing).
+- [GitHub Packages](https://docs.github.com/en/packages): free for public repositories. Private repositories: 500MB of storage, 1GB of data transfer per month for free, [more pricing options on their site](https://github.com/features/packages#pricing). Users have to issue personal token, and use it in credentatials section to consume github packages.
 - Please submit more options
 
 ## Gradle
