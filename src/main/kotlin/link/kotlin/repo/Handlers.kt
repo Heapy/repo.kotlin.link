@@ -1,11 +1,11 @@
 package link.kotlin.repo
 
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.PathHandler
 import io.undertow.server.handlers.ResponseCodeHandler
 import io.undertow.util.Headers
-import io.undertow.util.Methods
 import io.undertow.util.StatusCodes
 import org.slf4j.LoggerFactory
 import java.util.function.Supplier
@@ -24,7 +24,7 @@ class DelegatingHandler : HttpHandler {
 }
 
 class HomePageHandler(
-    private val configurationService: ConfigurationService
+    private val configurationService: ConfigurationService,
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         exchange.statusCode = StatusCodes.OK
@@ -58,14 +58,9 @@ class HomePageHandler(
 }
 
 class UpdateReposHandler(
-    private val updateNotificationService: UpdateNotificationService
+    private val updateNotificationService: UpdateNotificationService,
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
-        if (exchange.requestMethod != Methods.POST) {
-            exchange.statusCode = StatusCodes.METHOD_NOT_ALLOWED
-            return
-        }
-
         LOGGER.info("Updating configuration")
 
         try {
@@ -83,7 +78,7 @@ class UpdateReposHandler(
 }
 
 class RepoRedirectHandler(
-    private val repoUrl: String
+    private val repoUrl: String,
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         val location = repoUrl + exchange.requestPath
@@ -99,22 +94,43 @@ class RepoRedirectHandler(
     }
 }
 
+class HealthCheckHandler : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) {
+        exchange.statusCode = StatusCodes.OK
+        exchange.responseSender.send("""{"status":"ok"}""")
+    }
+}
+
+class PrometheusHandler(
+    private val prometheusMeterRegistry: PrometheusMeterRegistry,
+) : HttpHandler {
+    override fun handleRequest(exchange: HttpServerExchange) {
+        exchange.responseHeaders.add(Headers.CONTENT_TYPE, "text/plain; version=0.0.4")
+        exchange.responseSender.send(prometheusMeterRegistry.scrape())
+    }
+}
+
 class RootHandlerProvider(
     private val configurationService: ConfigurationService,
     private val homePageHandler: HttpHandler,
-    private val updateReposHandler: HttpHandler
+    private val updateReposHandler: HttpHandler,
+    private val healthCheckHandler: HttpHandler,
+    private val prometheusHandler: HttpHandler,
+    private val notFoundHandler: HttpHandler,
 ) : Supplier<HttpHandler> {
     override fun get(): HttpHandler {
         return PathHandler(10000)
             .addExactPath("/", homePageHandler)
             .addExactPath("/update", updateReposHandler)
+            .addExactPath("/healthcheck", healthCheckHandler)
+            .addExactPath("/metrics", prometheusHandler)
             .also { handler ->
                 configurationService.configuration.forEach {
                     val prefix = it.key.split(".").joinToString(prefix = "/", separator = "/", postfix = "/")
                     handler.addPrefixPath(prefix, RepoRedirectHandler(it.value))
                 }
             }
-            .addPrefixPath("/", NotFoundHandler())
+            .addPrefixPath("/", notFoundHandler)
     }
 }
 
@@ -139,5 +155,17 @@ class UpdateNotificationService {
 
     fun publish() {
         listener()
+    }
+}
+
+class MetricsHandlerWrapper(
+    private val prometheusMeterRegistry: PrometheusMeterRegistry,
+) {
+    fun wrap(key: String, handler: HttpHandler): HttpHandler {
+        return HttpHandler { exchange ->
+            prometheusMeterRegistry.timer("http", "endpoint", key).record {
+                handler.handleRequest(exchange)
+            }
+        }
     }
 }
