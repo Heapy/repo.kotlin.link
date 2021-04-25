@@ -66,6 +66,8 @@ class UpdateReposHandler(
             return
         }
 
+        LOGGER.info("Updating configuration")
+
         try {
             updateNotificationService.publish()
             exchange.statusCode = StatusCodes.OK
