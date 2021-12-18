@@ -1,4 +1,4 @@
-# repo.kotlin.link [![Build Status](https://travis-ci.com/Heapy/repo.kotlin.link.svg?branch=main)](https://travis-ci.com/Heapy/repo.kotlin.link) ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/heapy/repo.kotlin.link?sort=semver)
+# repo.kotlin.link [![Build](https://github.com/Heapy/repo.kotlin.link/actions/workflows/build.yml/badge.svg)](https://github.com/Heapy/repo.kotlin.link/actions/workflows/build.yml) [![Docker Image Version](https://img.shields.io/badge/Github-Container%20Registry-orange)](https://github.com/orgs/Heapy/packages/container/package/repo.kotlin.link)
 Maven repository that proxy artifact request to one of know project-based maven repositories
 
 ## Where to host your Maven artifacts
@@ -26,6 +26,7 @@ repo.kotlin.link is great for quick experiments, and collaboration of couple ind
 - [gradle-nexus/publish-plugin](https://github.com/gradle-nexus/publish-plugin) - Gradle Plugin covering the whole releasing process to Maven Central
 - [vanniktech/gradle-maven-publish-plugin](https://github.com/vanniktech/gradle-maven-publish-plugin) - Gradle Plugin that tries to simplify setup process
 - [saket/startship](https://github.com/saket/startship) - CLI tool for publishing
+- [No-bullshit guide on publishing your Gradle projects to Maven Central](https://madhead.me/posts/no-bullshit-maven-publish/)
 
 ## How to add your repository
 
@@ -39,14 +40,14 @@ Create PR with changes to [index.yml](https://github.com/Heapy/repo.kotlin.link/
 
 ```bash
 # Run
-docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 heapy/repo.kotlin.link:b7
+docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 ghcr.io/heapy/repo.kotlin.link:b3
 ```
 
 ## Update instance
 
 ```bash
-docker pull heapy/repo.kotlin.link:b7
+docker pull ghcr.io/heapy/repo.kotlin.link:b3
 docker stop repo.kotlin.link
 docker rm repo.kotlin.link
-docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 heapy/repo.kotlin.link:b7
+docker run --detach --name repo.kotlin.link --restart=always -p 0.0.0.0:8092:8080 ghcr.io/heapy/repo.kotlin.link:b3
 ```

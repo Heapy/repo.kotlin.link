@@ -2,9 +2,13 @@ package link.kotlin.repo
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.undertow.Undertow
 import io.undertow.server.HttpHandler
+import io.undertow.server.handlers.AllowedMethodsHandler
 import io.undertow.server.handlers.BlockingHandler
+import io.undertow.util.Methods
 import org.apache.http.client.HttpClient
 import org.apache.http.impl.client.HttpClients
 import kotlin.concurrent.thread
@@ -31,7 +35,17 @@ open class ApplicationFactory {
     open val configurationService: ConfigurationService by lazy {
         GithubConfigurationService(
             httpClient = httpClient,
-            yamlMapper = yamlMapper
+            yamlMapper = yamlMapper,
+        )
+    }
+
+    open val prometheusMeterRegistry: PrometheusMeterRegistry by lazy {
+        PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    }
+
+    open val metricsHandlerWrapper: MetricsHandlerWrapper by lazy {
+        MetricsHandlerWrapper(
+            prometheusMeterRegistry = prometheusMeterRegistry,
         )
     }
 
@@ -40,22 +54,68 @@ open class ApplicationFactory {
     }
 
     open val updateReposHandler: HttpHandler by lazy {
-        BlockingHandler(
-            UpdateReposHandler(
-                updateNotificationService = updateNotificationService
-            )
+        AllowedMethodsHandler(
+            BlockingHandler(
+                metricsHandlerWrapper.wrap(
+                    key = "update",
+                    UpdateReposHandler(
+                        updateNotificationService = updateNotificationService
+                    )
+                )
+            ),
+            Methods.POST,
+        )
+    }
+
+    open val healthCheckHandler: HttpHandler by lazy {
+        AllowedMethodsHandler(
+            metricsHandlerWrapper.wrap(
+                key = "healthcheck",
+                HealthCheckHandler()
+            ),
+            Methods.GET,
         )
     }
 
     open val homePageHandler: HttpHandler by lazy {
-        HomePageHandler(configurationService)
+        AllowedMethodsHandler(
+            metricsHandlerWrapper.wrap(
+                key = "home",
+                HomePageHandler(configurationService)
+            ),
+            Methods.GET,
+        )
+    }
+
+    open val prometheusHandler: HttpHandler by lazy {
+        AllowedMethodsHandler(
+            BlockingHandler(
+                metricsHandlerWrapper.wrap(
+                    key = "metrics",
+                    PrometheusHandler(
+                        prometheusMeterRegistry = prometheusMeterRegistry
+                    )
+                ),
+            ),
+            Methods.GET,
+        )
+    }
+
+    open val notFoundHandler: HttpHandler by lazy {
+        metricsHandlerWrapper.wrap(
+            key = "metrics",
+            NotFoundHandler()
+        )
     }
 
     open val rootHandlerProvider: RootHandlerProvider by lazy {
         RootHandlerProvider(
             configurationService = configurationService,
             homePageHandler = homePageHandler,
-            updateReposHandler = updateReposHandler
+            updateReposHandler = updateReposHandler,
+            healthCheckHandler = healthCheckHandler,
+            prometheusHandler = prometheusHandler,
+            notFoundHandler = notFoundHandler,
         )
     }
 

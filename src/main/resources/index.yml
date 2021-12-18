@@ -8,9 +8,11 @@
   - "ru.mipt.npm"
 "https://maven.pkg.jetbrains.space/mipt-npm/p/df/maven":
   - "hep.dataforge"
-"https://jcenter.bintray.com":
+"https://repo.maven.apache.org/maven2":
   - "dev.inmo"
 "https://maven.pkg.github.com/mpetuska/khakra":
   - "io.github.mpetuska"
 "https://maven.pkg.github.com/mpetuska/npm-publish":
   - "lt.petuska"
+"https://gitlab.com/api/v4/projects/11000558/packages/maven":
+  - "io.github.commandertvis"
