@@ -6,6 +6,8 @@
   - "space.kscience"
 "https://maven.pkg.jetbrains.space/mipt-npm/p/mipt-npm/maven":
   - "ru.mipt.npm"
+"https://maven.pkg.jetbrains.space/mipt-npm/p/numass/maven":
+  - "ru.inr.mass"
 "https://maven.pkg.jetbrains.space/mipt-npm/p/df/maven":
   - "hep.dataforge"
 "https://repo.maven.apache.org/maven2":
