@@ -45,8 +45,15 @@ class HomePageHandler(
                 <h2>Hosted packages</h2>
                 <ul>
                     ${
-                configurationService.configuration.map {
-                    """<li><strong>${it.key}</strong>: ${it.value}</li>"""
+                configurationService.configuration.map { config ->
+                    """
+                    <li>
+                        <strong>
+                            ${config.key}
+                            ${config.value.artifactId?.let { ":$it" }}
+                        </strong>: 
+                        ${config.value.repo}
+                    </li>"""
                 }.joinToString(separator = "\n")
             }
                 </ul>
@@ -70,6 +77,8 @@ class UpdateReposHandler(
             LOGGER.error("Update failed", e)
             exchange.statusCode = StatusCodes.INTERNAL_SERVER_ERROR
         }
+
+        LOGGER.info("Updating configuration done")
     }
 
     companion object {
@@ -78,10 +87,10 @@ class UpdateReposHandler(
 }
 
 class RepoRedirectHandler(
-    private val repoUrl: String,
+    private val config: Config,
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
-        val location = repoUrl + exchange.requestPath
+        val location = config.repo + exchange.requestPath
 
         LOGGER.info("Request for [{}] redirected to [{}]", exchange.requestPath, location)
 

@@ -1,0 +1,46 @@
+[
+  {
+    "groupId": "io.heapy.komodo",
+    "repo": "https://heapy.s3.eu-central-1.amazonaws.com"
+  },
+  {
+    "groupId": "kscience.plotlykt",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/sci/maven"
+  },
+  {
+    "groupId": "kscience.kmath",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/sci/maven"
+  },
+  {
+    "groupId": "space.kscience",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/sci/maven"
+  },
+  {
+    "groupId": "ru.mipt.npm",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/mipt-npm/maven"
+  },
+  {
+    "groupId": "ru.inr.mass",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/numass/maven"
+  },
+  {
+    "groupId": "hep.dataforge",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/df/maven"
+  },
+  {
+    "groupId": "dev.inmo",
+    "repo": "https://repo.maven.apache.org/maven2"
+  },
+  {
+    "groupId": "io.github.mpetuska",
+    "repo": "https://maven.pkg.github.com/mpetuska/khakra"
+  },
+  {
+    "groupId": "lt.petuska",
+    "repo": "https://maven.pkg.github.com/mpetuska/npm-publish"
+  },
+  {
+    "groupId": "io.github.commandertvis",
+    "repo": "https://gitlab.com/api/v4/projects/11000558/packages/maven"
+  }
+]

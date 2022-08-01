@@ -1,7 +1,5 @@
 package link.kotlin.repo
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.undertow.Undertow
@@ -9,33 +7,37 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.handlers.AllowedMethodsHandler
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.Methods
-import org.apache.http.client.HttpClient
-import org.apache.http.impl.client.HttpClients
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.apache.hc.client5.http.classic.HttpClient
+import org.apache.hc.client5.http.classic.methods.HttpGet
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler
+import org.apache.hc.client5.http.impl.classic.HttpClients
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager
 import kotlin.concurrent.thread
 
 fun main() {
     ApplicationFactory().start()
-    // To test with local config
-    // LocalApplicationFactory().start()
 }
 
 open class ApplicationFactory {
-    open val yamlMapper: ObjectMapper by lazy {
-        ObjectMapper(YAMLFactory())
+    open val json: Json by lazy {
+        Json
     }
 
     open val httpClient: HttpClient by lazy {
-        HttpClients.createDefault().also {
-            Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                it.close()
-            })
-        }
+        HttpClients
+            .createMinimal(BasicHttpClientConnectionManager())
+            .also {
+                Runtime.getRuntime().addShutdownHook(thread(start = false) {
+                    it.close()
+                })
+            }
     }
 
     open val configurationService: ConfigurationService by lazy {
         GithubConfigurationService(
-            httpClient = httpClient,
-            yamlMapper = yamlMapper,
+            configProvider = configProvider,
         )
     }
 
@@ -123,6 +125,15 @@ open class ApplicationFactory {
         UpdateNotificationService()
     }
 
+    open val configProvider: () -> List<Config> = {
+        val data = httpClient.execute(
+            HttpGet("https://raw.githubusercontent.com/Heapy/repo.kotlin.link/main/src/main/resources/index.json"),
+            BasicHttpClientResponseHandler()
+        )
+
+        json.decodeFromString(data)
+    }
+
     open val undertow: Undertow by lazy {
         Undertow.builder()
             .addHttpListener(8080, "0.0.0.0", delegatingHandler)
@@ -141,11 +152,5 @@ open class ApplicationFactory {
         }
         updateNotificationService.publish()
         undertow.start()
-    }
-}
-
-open class LocalApplicationFactory : ApplicationFactory() {
-    override val configurationService: ConfigurationService by lazy {
-        LocalConfigurationService(yamlMapper)
     }
 }

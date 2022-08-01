@@ -1,4 +1,4 @@
 # Container with application
-FROM amazoncorretto:11.0.11
+FROM amazoncorretto:17.0.4
 COPY /build/install/repo /repo
 ENTRYPOINT /repo/bin/repo

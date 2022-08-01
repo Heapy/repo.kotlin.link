@@ -1,5 +1,6 @@
 plugins {
-    kotlin("jvm").version("1.4.32")
+    kotlin("jvm").version("1.7.10")
+    kotlin("plugin.serialization").version("1.7.10")
     application
 }
 
@@ -13,12 +14,9 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("io.undertow:undertow-core:2.2.7.Final")
-    implementation("org.slf4j:slf4j-api:1.7.30")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("org.apache.httpcomponents:httpclient:4.5.13")
-    implementation("io.micrometer:micrometer-registry-prometheus:1.6.6")
-
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.3")
+    implementation("io.undertow:undertow-core:2.2.17.Final")
+    implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.2-beta1")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 }
