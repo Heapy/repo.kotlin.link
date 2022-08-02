@@ -4,93 +4,105 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.undertow.server.HttpHandler
 import io.undertow.server.HttpServerExchange
 import io.undertow.server.handlers.PathHandler
-import io.undertow.server.handlers.ResponseCodeHandler
 import io.undertow.util.Headers
 import io.undertow.util.StatusCodes
+import kotlinx.html.a
+import kotlinx.html.body
+import kotlinx.html.dom.createHTMLDocument
+import kotlinx.html.dom.serialize
+import kotlinx.html.h1
+import kotlinx.html.h2
+import kotlinx.html.head
+import kotlinx.html.html
+import kotlinx.html.lang
+import kotlinx.html.li
+import kotlinx.html.meta
+import kotlinx.html.p
+import kotlinx.html.strong
+import kotlinx.html.title
+import kotlinx.html.ul
+import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 import java.util.function.Supplier
 
-class DelegatingHandler : HttpHandler {
-    @Volatile
-    private var handler: HttpHandler = ResponseCodeHandler.HANDLE_404
-
-    fun setHandler(httpHandler: HttpHandler) {
-        handler = httpHandler
-    }
-
-    override fun handleRequest(exchange: HttpServerExchange) {
-        handler.handleRequest(exchange)
-    }
-}
-
 class HomePageHandler(
-    private val configurationService: ConfigurationService,
+    private val configuration: Map<String, List<Repo>>,
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         exchange.statusCode = StatusCodes.OK
-        exchange.responseSender.send(
-            """
-            <!doctype html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-                <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                <title>repo.kotlin.link</title>
-            </head>
-            <body>
-                <h1>repo.kotlin.link</h1>
-                <p><a href="https://github.com/Heapy/repo.kotlin.link">Github</a></p>
-                
-                <h2>Hosted packages</h2>
-                <ul>
-                    ${
-                configurationService.configuration.map { config ->
-                    """
-                    <li>
-                        <strong>
-                            ${config.key}
-                            ${config.value.artifactId?.let { ":$it" }}
-                        </strong>: 
-                        ${config.value.repo}
-                    </li>"""
-                }.joinToString(separator = "\n")
+        val page = createHTMLDocument()
+            .html {
+                lang = "en"
+                head {
+                    meta(charset = "utf-8")
+                    meta {
+                        name = "viewport"
+                        content = "width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+                    }
+                    meta {
+                        httpEquiv = "X-UA-Compatible"
+                        content = "ie=edge"
+                    }
+                    title("repo.kotlin.link")
+                }
+                body {
+                    h1 { +"repo.kotlin.link" }
+                    p {
+                        a {
+                            href = "https://github.com/Heapy/repo.kotlin.link"
+                            +"Github"
+                        }
+                    }
+                    h2 { +"Hosted packages" }
+                    ul {
+                        configuration.forEach { (groupId, repos) ->
+                            if (repos.size == 1) with(repos.single()) {
+                                li {
+                                    strong {
+                                        +groupId
+                                        artifactId?.let { +":$it" }
+                                    }
+                                    +": $repo"
+                                }
+                            } else with(repos) {
+                                li {
+                                    strong {
+                                        +"$groupId:"
+                                    }
+                                    ul {
+                                        forEach { repo ->
+                                            li {
+                                                strong {
+                                                    +repo.groupId
+                                                    repo.artifactId?.let { +":$it" }
+                                                }
+                                                +": ${repo.repo}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
-                </ul>
-            </body>
-            </html>
-        """.trimIndent()
-        )
-    }
-}
-
-class UpdateReposHandler(
-    private val updateNotificationService: UpdateNotificationService,
-) : HttpHandler {
-    override fun handleRequest(exchange: HttpServerExchange) {
-        LOGGER.info("Updating configuration")
-
-        try {
-            updateNotificationService.publish()
-            exchange.statusCode = StatusCodes.OK
-        } catch (e: Exception) {
-            LOGGER.error("Update failed", e)
-            exchange.statusCode = StatusCodes.INTERNAL_SERVER_ERROR
-        }
-
-        LOGGER.info("Updating configuration done")
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(UpdateReposHandler::class.java)
+            .serialize(prettyPrint = true)
+        exchange.responseSender.send(page)
     }
 }
 
 class RepoRedirectHandler(
-    private val config: Config,
+    private val repos: List<Repo>,
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
-        val location = config.repo + exchange.requestPath
+        val repo = repos
+            .sortedByDescending { it.artifactId?.length }
+            .find { it.pathRegex.matches(exchange.requestPath) }
+            ?: return run {
+                exchange.statusCode = StatusCodes.NOT_FOUND
+            }
+
+        val location = repo.repo + exchange.requestPath
 
         LOGGER.info("Request for [{}] redirected to [{}]", exchange.requestPath, location)
 
@@ -100,6 +112,28 @@ class RepoRedirectHandler(
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(RepoRedirectHandler::class.java)
+    }
+}
+
+@Serializable
+data class Repo(
+    val repo: String,
+    val groupId: String,
+    val artifactId: String? = null,
+) {
+    val pathRegex: Regex by lazy {
+        Regex(buildString {
+            append(
+                groupId
+                    .split(".")
+                    .joinToString(prefix = "^\\/", separator = "\\/", postfix = "\\/")
+            )
+            artifactId?.let {
+                append(artifactId.replace("*", "[a-b\\-]*"))
+                append("\\/")
+            }
+            append(".*$")
+        })
     }
 }
 
@@ -120,9 +154,8 @@ class PrometheusHandler(
 }
 
 class RootHandlerProvider(
-    private val configurationService: ConfigurationService,
+    private val configuration: Map<String, List<Repo>>,
     private val homePageHandler: HttpHandler,
-    private val updateReposHandler: HttpHandler,
     private val healthCheckHandler: HttpHandler,
     private val prometheusHandler: HttpHandler,
     private val notFoundHandler: HttpHandler,
@@ -130,11 +163,10 @@ class RootHandlerProvider(
     override fun get(): HttpHandler {
         return PathHandler(10000)
             .addExactPath("/", homePageHandler)
-            .addExactPath("/update", updateReposHandler)
             .addExactPath("/healthcheck", healthCheckHandler)
             .addExactPath("/metrics", prometheusHandler)
             .also { handler ->
-                configurationService.configuration.forEach {
+                configuration.forEach {
                     val prefix = it.key.split(".").joinToString(prefix = "/", separator = "/", postfix = "/")
                     handler.addPrefixPath(prefix, RepoRedirectHandler(it.value))
                 }
@@ -151,19 +183,6 @@ class NotFoundHandler : HttpHandler {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(NotFoundHandler::class.java)
-    }
-}
-
-class UpdateNotificationService {
-    @Volatile
-    private var listener: () -> Unit = {}
-
-    fun subscribe(listener: () -> Unit) {
-        this.listener = listener
-    }
-
-    fun publish() {
-        listener()
     }
 }
 

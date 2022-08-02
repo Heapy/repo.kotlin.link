@@ -9,11 +9,6 @@ import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.Methods
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.apache.hc.client5.http.classic.HttpClient
-import org.apache.hc.client5.http.classic.methods.HttpGet
-import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler
-import org.apache.hc.client5.http.impl.classic.HttpClients
-import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager
 import kotlin.concurrent.thread
 
 fun main() {
@@ -25,20 +20,14 @@ open class ApplicationFactory {
         Json
     }
 
-    open val httpClient: HttpClient by lazy {
-        HttpClients
-            .createMinimal(BasicHttpClientConnectionManager())
-            .also {
-                Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                    it.close()
-                })
-            }
-    }
+    open val configuration: Map<String, List<Repo>> by lazy {
+        val data = ApplicationFactory::class.java.classLoader
+            .getResourceAsStream("index.json")!!
+            .reader()
+            .readText()
 
-    open val configurationService: ConfigurationService by lazy {
-        GithubConfigurationService(
-            configProvider = configProvider,
-        )
+        json.decodeFromString<List<Repo>>(data)
+            .groupBy { it.groupId }
     }
 
     open val prometheusMeterRegistry: PrometheusMeterRegistry by lazy {
@@ -48,24 +37,6 @@ open class ApplicationFactory {
     open val metricsHandlerWrapper: MetricsHandlerWrapper by lazy {
         MetricsHandlerWrapper(
             prometheusMeterRegistry = prometheusMeterRegistry,
-        )
-    }
-
-    open val delegatingHandler: DelegatingHandler by lazy {
-        DelegatingHandler()
-    }
-
-    open val updateReposHandler: HttpHandler by lazy {
-        AllowedMethodsHandler(
-            BlockingHandler(
-                metricsHandlerWrapper.wrap(
-                    key = "update",
-                    UpdateReposHandler(
-                        updateNotificationService = updateNotificationService
-                    )
-                )
-            ),
-            Methods.POST,
         )
     }
 
@@ -83,7 +54,7 @@ open class ApplicationFactory {
         AllowedMethodsHandler(
             metricsHandlerWrapper.wrap(
                 key = "home",
-                HomePageHandler(configurationService)
+                HomePageHandler(configuration)
             ),
             Methods.GET,
         )
@@ -110,33 +81,19 @@ open class ApplicationFactory {
         )
     }
 
-    open val rootHandlerProvider: RootHandlerProvider by lazy {
+    open val rootHandler: HttpHandler by lazy {
         RootHandlerProvider(
-            configurationService = configurationService,
+            configuration = configuration,
             homePageHandler = homePageHandler,
-            updateReposHandler = updateReposHandler,
             healthCheckHandler = healthCheckHandler,
             prometheusHandler = prometheusHandler,
             notFoundHandler = notFoundHandler,
-        )
-    }
-
-    open val updateNotificationService: UpdateNotificationService by lazy {
-        UpdateNotificationService()
-    }
-
-    open val configProvider: () -> List<Config> = {
-        val data = httpClient.execute(
-            HttpGet("https://raw.githubusercontent.com/Heapy/repo.kotlin.link/main/src/main/resources/index.json"),
-            BasicHttpClientResponseHandler()
-        )
-
-        json.decodeFromString(data)
+        ).get()
     }
 
     open val undertow: Undertow by lazy {
         Undertow.builder()
-            .addHttpListener(8080, "0.0.0.0", delegatingHandler)
+            .addHttpListener(8080, "0.0.0.0", rootHandler)
             .build()
             .also { server ->
                 Runtime.getRuntime().addShutdownHook(thread(start = false) {
@@ -146,11 +103,6 @@ open class ApplicationFactory {
     }
 
     open fun start() {
-        updateNotificationService.subscribe {
-            configurationService.update()
-            delegatingHandler.setHandler(rootHandlerProvider.get())
-        }
-        updateNotificationService.publish()
         undertow.start()
     }
 }

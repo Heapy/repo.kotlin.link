@@ -16,6 +16,11 @@
     "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/sci/maven"
   },
   {
+    "groupId": "space.kscience",
+    "artifactId": "controls-core*",
+    "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/controls/maven"
+  },
+  {
     "groupId": "ru.mipt.npm",
     "repo": "https://maven.pkg.jetbrains.space/mipt-npm/p/mipt-npm/maven"
   },

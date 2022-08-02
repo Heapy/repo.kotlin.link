@@ -52,5 +52,3 @@ jobs:
           tags: |
             ghcr.io/heapy/repo.kotlin.link:main
             ghcr.io/heapy/repo.kotlin.link:b${{ github.run_number }}
-      - name: "Update"
-        run: "curl --request POST -sL --url https://repo.kotlin.link/update"
