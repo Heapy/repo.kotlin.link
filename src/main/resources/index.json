@@ -41,6 +41,7 @@
   },
   {
     "groupId": "io.github.commandertvis",
+    "artifactId": "jni",
     "repo": "https://gitlab.com/api/v4/projects/11000558/packages/maven"
   }
 ]
