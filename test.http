@@ -9,8 +9,3 @@ GET http://localhost:8080/metrics
 GET http://localhost:8080/healthcheck
 
 ###
-
-POST http://localhost:8080/update
-
-###
-
