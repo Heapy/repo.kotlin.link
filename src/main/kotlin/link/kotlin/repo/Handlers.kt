@@ -191,9 +191,11 @@ class MetricsHandlerWrapper(
 ) {
     fun wrap(key: String, handler: HttpHandler): HttpHandler {
         return HttpHandler { exchange ->
-            prometheusMeterRegistry.timer("http", "endpoint", key).record {
-                handler.handleRequest(exchange)
-            }
+            prometheusMeterRegistry
+                .timer("http", "endpoint", key)
+                .record(Runnable {
+                    handler.handleRequest(exchange)
+                })
         }
     }
 }
