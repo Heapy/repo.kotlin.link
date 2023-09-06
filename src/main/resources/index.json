@@ -5,24 +5,15 @@
   },
   {
     "groupId": "space.kscience",
-    "repo": "https://maven.pkg.jetbrains.space/spc/p/sci/maven"
-  },
-  {
-    "groupId": "space.kscience",
-    "artifactId": "controls-core*",
-    "repo": "https://maven.pkg.jetbrains.space/spc/p/controls/maven"
+    "repo": "https://maven.sciprog.center/kscience"
   },
   {
     "groupId": "center.sciprog",
-    "repo": "https://maven.pkg.jetbrains.space/spc/p/sci/maven"
+    "repo": "https://maven.sciprog.center/spc"
   },
   {
     "groupId": "ru.mipt.npm",
-    "repo": "https://maven.pkg.jetbrains.space/spc/p/mipt-npm/maven"
-  },
-  {
-    "groupId": "ru.inr.mass",
-    "repo": "https://maven.pkg.jetbrains.space/spc/p/numass/maven"
+    "repo": "https://maven.sciprog.center/spc"
   },
   {
     "groupId": "dev.inmo",
