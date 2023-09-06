@@ -7,7 +7,6 @@ import io.undertow.server.HttpHandler
 import io.undertow.server.handlers.AllowedMethodsHandler
 import io.undertow.server.handlers.BlockingHandler
 import io.undertow.util.Methods
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.concurrent.thread
 
@@ -88,6 +87,7 @@ open class ApplicationFactory {
             healthCheckHandler = healthCheckHandler,
             prometheusHandler = prometheusHandler,
             notFoundHandler = notFoundHandler,
+            metricsHandlerWrapper = metricsHandlerWrapper,
         ).get()
     }
 

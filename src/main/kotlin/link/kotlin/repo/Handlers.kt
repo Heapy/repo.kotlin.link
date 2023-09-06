@@ -30,6 +30,7 @@ class HomePageHandler(
 ) : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
         exchange.statusCode = StatusCodes.OK
+        exchange.responseHeaders.add(Headers.CONTENT_TYPE, "text/html; charset=utf-8")
         val page = createHTMLDocument()
             .html {
                 lang = "en"
@@ -104,14 +105,14 @@ class RepoRedirectHandler(
 
         val location = repo.repo + exchange.requestPath
 
-        LOGGER.info("Request for [{}] redirected to [{}]", exchange.requestPath, location)
+        log.info("Request for [{}] redirected to [{}]", exchange.requestPath, location)
 
         exchange.responseHeaders.add(Headers.LOCATION, location)
         exchange.statusCode = StatusCodes.FOUND
     }
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(RepoRedirectHandler::class.java)
+        private val log = LoggerFactory.getLogger(RepoRedirectHandler::class.java)
     }
 }
 
@@ -159,6 +160,7 @@ class RootHandlerProvider(
     private val healthCheckHandler: HttpHandler,
     private val prometheusHandler: HttpHandler,
     private val notFoundHandler: HttpHandler,
+    private val metricsHandlerWrapper: MetricsHandlerWrapper,
 ) : Supplier<HttpHandler> {
     override fun get(): HttpHandler {
         return PathHandler(10000)
@@ -168,7 +170,13 @@ class RootHandlerProvider(
             .also { handler ->
                 configuration.forEach {
                     val prefix = it.key.split(".").joinToString(prefix = "/", separator = "/", postfix = "/")
-                    handler.addPrefixPath(prefix, RepoRedirectHandler(it.value))
+                    handler.addPrefixPath(
+                        prefix,
+                        metricsHandlerWrapper.wrap(
+                            key = "redirect",
+                            RepoRedirectHandler(it.value)
+                        )
+                    )
                 }
             }
             .addPrefixPath("/", notFoundHandler)
@@ -177,12 +185,12 @@ class RootHandlerProvider(
 
 class NotFoundHandler : HttpHandler {
     override fun handleRequest(exchange: HttpServerExchange) {
-        LOGGER.info("Unknown path [${exchange.requestPath}]")
+        log.info("Unknown path [${exchange.requestPath}]")
         exchange.statusCode = StatusCodes.NOT_FOUND
     }
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(NotFoundHandler::class.java)
+        private val log = LoggerFactory.getLogger(NotFoundHandler::class.java)
     }
 }
 
