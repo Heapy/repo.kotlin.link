@@ -1,7 +1,7 @@
 package link.kotlin.repo
 
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.undertow.Undertow
 import io.undertow.server.HttpHandler
 import io.undertow.server.handlers.AllowedMethodsHandler
