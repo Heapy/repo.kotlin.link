@@ -30,10 +30,13 @@ repo.kotlin.link is great for quick experiments, and collaboration of couple ind
 
 ## How to add your repository
 
-Create PR with changes to [index.yml](https://github.com/Heapy/repo.kotlin.link/blob/main/src/main/resources/index.yml):
-```yaml
-"https://dl.bintray.com/heapy/heap-dev": # repository url
-  - "io.heapy.komodo" # list of allowed groups
+Create PR with changes to [index.json](https://github.com/Heapy/repo.kotlin.link/blob/main/src/main/resources/index.json):
+
+```json
+{
+  "groupId": "io.heapy.komodo",
+  "repo": "https://dl.bintray.com/heapy/heap-dev"
+}
 ```
 
 ## Run own instance
