@@ -1,1 +1,1 @@
-rootProject.name = "repo.kotlin.link"
+rootProject.name = "repo_kotlin_link"
