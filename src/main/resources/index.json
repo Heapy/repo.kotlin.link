@@ -1,9 +1,5 @@
 [
   {
-    "groupId": "io.heapy.komodo",
-    "repo": "https://heapy.s3.eu-central-1.amazonaws.com"
-  },
-  {
     "groupId": "space.kscience",
     "repo": "https://maven.sciprog.center/kscience"
   },
