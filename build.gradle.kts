@@ -19,5 +19,5 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:1.17.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.12.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:6.1.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
 }
