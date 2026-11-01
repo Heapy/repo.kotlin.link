@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation("io.undertow:undertow-core:2.4.4.Final")
-    implementation("ch.qos.logback:logback-classic:1.6.5")
+    implementation("ch.qos.logback:logback-classic:1.6.6")
     implementation("io.micrometer:micrometer-registry-prometheus:1.17.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.12.0")
